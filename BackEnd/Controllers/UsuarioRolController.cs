@@ -1,5 +1,6 @@
 ﻿using BackEnd.Mappers;
 using BackEnd.Models;
+using BackEnd.ViewModels;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -10,42 +11,40 @@ namespace BackEnd.Controllers
     [ApiController]
     public class UsuarioRolController : ControllerBase
     {
-        private readonly DBVETPETContext _dbContext; // Reemplaza DbContext con tu clase que maneja la conexión a la base de datos
+        private readonly DBVETPETContext _context;
 
-        public UsuarioRolController(DBVETPETContext dbContext)
+        public UsuarioRolController(DBVETPETContext context)
         {
-            _dbContext = dbContext;
+            _context = context;
         }
 
- 
-
-
-        // Endpoint para asignar un rol a un usuario
-        [HttpPost("asignar-rol")]
-        public async Task<IActionResult> AsignarRolUsuario([FromBody] AsignarRolUsuarioModel model)
+        [HttpGet("{tipoRol}")]
+        public IEnumerable<Usuario> GetUsuariosPorTipoRol(string tipoRol)
         {
-            try
-            {
-                // Buscar el usuario y el rol en la base de datos
-                var usuarioExistente = await _dbContext.Usuarios.FindAsync(model.UsuarioId);
-                var rolExistente = await _dbContext.Rols.FindAsync(model.RolId);
+            var usuariosPorRol = _context.Usuarios
+                .Where(u => u.Rols.Any(r => r.Tipo.Contains(tipoRol)))
+                .ToList();
 
-                if (usuarioExistente == null || rolExistente == null)
-                {
-                    return BadRequest("El usuario o el rol especificado no existe.");
-                }
-
-                // Asignar el rol al usuario y guardar los cambios en la base de datos
-                usuarioExistente.Rols.Add(rolExistente);
-                await _dbContext.SaveChangesAsync();
-
-                return Ok("Rol asignado al usuario exitosamente.");
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, "Error al procesar la solicitud.");
-            }
+            return usuariosPorRol;
         }
 
+
+        // POST: api/UsuarioRol
+        [HttpPost]
+        public IActionResult PostUsuarioRol(UsuarioRolModel model)
+        {
+            var usuario = _context.Usuarios.Find(model.UsuarioId);
+            var rol = _context.Rols.Find(model.RolId);
+
+            if (usuario == null || rol == null)
+            {
+                return NotFound("El usuario o el rol especificado no existe.");
+            }
+
+            usuario.Rols.Add(rol);
+            _context.SaveChanges();
+
+            return Ok("Rol asignado al usuario exitosamente.");
+        }
     }
 }

@@ -16,20 +16,18 @@ namespace BackEnd.Controllers
             _context = context;
         }
 
-        //METODO PARA LISTAR TODO LOS ROLES QUE EXISTEN EN LA BASE DE DATOS
-
+        // GET: api/Rols
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<Rol>>> GetRoles()
+        public ActionResult<IEnumerable<Rol>> GetRols()
         {
-            return await _context.Rols.OrderByDescending(r => r.RolId).ToListAsync();
+            return _context.Rols.ToList();
         }
 
-        //METODO PARA BUSCAR EL ROL POR SU ID
-
+        // GET: api/Rols/5
         [HttpGet("{id}")]
-        public async Task<ActionResult<Rol>> GetRol(int id)
+        public ActionResult<Rol> GetRol(int id)
         {
-            var rol = await _context.Rols.FindAsync(id);
+            var rol = _context.Rols.Find(id);
 
             if (rol == null)
             {
@@ -39,85 +37,73 @@ namespace BackEnd.Controllers
             return rol;
         }
 
-        // METODO PARA CREAR UN NUEVO ROL 
-
+        // POST: api/Rols
         [HttpPost]
-        public ActionResult<Rol> CreateRol(Rol rol)
+        public ActionResult<Rol> PostRol(Rol rol)
         {
-            try
+            // Verificar si ya existe un rol con el mismo tipo en la base de datos
+            var existingRol = _context.Rols.FirstOrDefault(r => r.Tipo == rol.Tipo);
+
+            if (existingRol != null)
             {
-                // Convertir el tipo a minúsculas para realizar la comparación sin distinguir mayúsculas y minúsculas
-                string tipoLowerCase = rol.Tipo.ToLower();
-
-                // Verificar si ya existe un rol con el mismo tipo (ignorando mayúsculas y minúsculas)
-                bool rolExists = _context.Rols.Any(r => r.Tipo.ToLower() == tipoLowerCase);
-
-                if (rolExists)
-                {
-                    return BadRequest("El rol ya existe.");
-                }
-
-                // Agregar el nuevo rol y guardar cambios en la base de datos
-                _context.Rols.Add(rol);
-                _context.SaveChanges();
-
-                return CreatedAtAction("GetRol", new { id = rol.RolId }, rol);
+                // Si ya existe un rol con el mismo tipo, retornar un error indicando que el rol ya existe
+                return BadRequest("Ya existe un rol con el mismo tipo.");
             }
-            catch (Exception ex)
-            {
-                return StatusCode(500, $"Error interno del servidor: {ex.Message}");
-            }
+
+            // Si no existe un rol con el mismo tipo, agregar el nuevo rol a la base de datos
+            _context.Rols.Add(rol);
+            _context.SaveChanges();
+
+            return CreatedAtAction(nameof(GetRol), new { id = rol.RolId }, rol);
         }
 
-        // METODO PARA ACTUALIZAR EL ROL
-
+        // PUT: api/Rols/5
         [HttpPut("{id}")]
-        public async Task<IActionResult> UpdateRol(int id, Rol rol)
+        public ActionResult<Rol> ActualizarRol(int id, [FromBody] Rol rolActualizado)
         {
-            if (id != rol.RolId)
+            // Buscar el rol existente en la base de datos por su ID
+            var rolExistente = _context.Rols.Find(id);
+
+            if (rolExistente == null)
             {
-                return BadRequest();
+                // Si no se encuentra el rol, retornar un error indicando que el rol no existe
+                return NotFound("No se encontró ningún rol con el ID proporcionado.");
             }
 
-            _context.Entry(rol).State = EntityState.Modified;
+            // Verificar si ya existe otro rol con el mismo tipo en la base de datos (excepto el rol actual)
+            var existingRol = _context.Rols.FirstOrDefault(r => r.Tipo == rolActualizado.Tipo && r.RolId != id);
 
-            try
+            if (existingRol != null)
             {
-                await _context.SaveChangesAsync();
-            }
-            catch (DbUpdateConcurrencyException)
-            {
-                if (!RolExists(id))
-                {
-                    return NotFound();
-                }
-                else
-                {
-                    throw;
-                }
+                // Si ya existe otro rol con el mismo tipo, retornar un error indicando que el rol ya existe
+                return BadRequest("Ya existe un rol con el mismo tipo.");
             }
 
-            return NoContent();
+            // Actualizar el rol existente con los nuevos datos del rol actualizado
+            rolExistente.Tipo = rolActualizado.Tipo;
+
+            // Guardar los cambios en la base de datos
+            _context.SaveChanges();
+
+            return Ok(rolExistente);
         }
 
-        // METODO PARA ELIMINAR EL ROL
 
+        // DELETE: api/Rols/5
         [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteRol(int id)
+        public IActionResult DeleteRol(int id)
         {
-            var rol = await _context.Rols.FindAsync(id);
+            var rol = _context.Rols.Find(id);
             if (rol == null)
             {
                 return NotFound();
             }
 
             _context.Rols.Remove(rol);
-            await _context.SaveChangesAsync();
+            _context.SaveChanges();
 
             return NoContent();
         }
-
-        //METODO PARA COMPROBAR SI EL ROL YA EXISTE EN LA BASE DE DATOS
 
         private bool RolExists(int id)
         {
@@ -125,9 +111,3 @@ namespace BackEnd.Controllers
         }
     }
 }
-
-
-
-
-
-

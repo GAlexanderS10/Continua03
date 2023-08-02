@@ -37,27 +37,28 @@ namespace BackEnd.Controllers
 
             return Ok(cita);
         }
-
-        [HttpGet("obtenerCitasConMascota")]
-        public async Task<ActionResult<List<CitaConMascotaDTO>>> ObtenerCitasConMascota()
+        [HttpGet("obtenerCitasConMascota/{idCliente}")]
+        public async Task<ActionResult<List<CitaConMascotaDTO>>> ObtenerCitasConMascota(int idCliente)
         {
             var citasConMascota = await _context.Cita
-                .Include(c => c.Mascota) 
+                .Include(c => c.Mascota)
+                .Where(c => c.ClienteId == idCliente) // Filtrar por el ID del cliente
                 .Select(c => new CitaConMascotaDTO
                 {
                     NroCita = c.NroCita,
+                    NombreMascota = c.Mascota.Nombre,
                     TipoServicio = c.TipoServicio,
                     FechaRegistro = c.FechaRegistro,
                     FechaCita = c.FechaCita,
                     Hora = c.Hora,
                     Estado = c.Estado,
-                    NombreMascota = c.Mascota.Nombre, 
                 })
                 .OrderByDescending(c => c.NroCita)
                 .ToListAsync();
 
             return Ok(citasConMascota);
         }
+
 
 
         [HttpPost("buscarPorDni")]
@@ -120,8 +121,6 @@ namespace BackEnd.Controllers
                 {
                     return NotFound();
                 }
-
-                cita.ClienteId = citaDTO.ClienteId;
                 cita.MascotaId = citaDTO.MascotaId;
                 cita.TipoServicio = citaDTO.TipoServicio;
                 cita.FechaRegistro = citaDTO.FechaRegistro;
