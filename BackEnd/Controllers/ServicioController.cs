@@ -43,6 +43,25 @@ namespace BackEnd.Controllers
             return servicio;
         }
 
+
+        [HttpGet("buscar")]
+        public async Task<ActionResult<IEnumerable<Servicio>>> BuscarServicio([FromQuery] string searchTerm)
+        {
+            // Obtener todos los servicios desde la base de datos
+            List<Servicio> servicios = await _context.Servicios
+                .OrderByDescending(s => s.ServicioId)
+                .ToListAsync();
+
+            // Realizar la búsqueda en la lista de servicios en memoria
+            servicios = servicios.Where(s => s.Nombre.Contains(searchTerm, StringComparison.OrdinalIgnoreCase)).ToList();
+
+            return servicios;
+        }
+
+
+
+
+
         //METODO PARA REGISTRAR UN NUEVO SERVICIO
 
         [HttpPost]

@@ -37,6 +37,21 @@ namespace BackEnd.Controllers
             return cliente;
         }
 
+        [HttpGet("buscar")]
+        public ActionResult<IEnumerable<Cliente>> BuscarClientePorDni([FromQuery] string searchTerm)
+        {
+            // Obtener todos los clientes desde la base de datos
+            List<Cliente> clientes = _context.Clientes
+                .OrderByDescending(c => c.ClienteId)
+                .ToList();
+
+            // Realizar la búsqueda en la lista de clientes en memoria
+            clientes = clientes.Where(c => c.Dni.Contains(searchTerm, StringComparison.OrdinalIgnoreCase)).ToList();
+
+            return clientes;
+        }
+
+
         [HttpGet("Dni/{dni}")]
         public ActionResult<Cliente> GetClienteByDni(string dni)
         {

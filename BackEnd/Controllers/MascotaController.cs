@@ -60,6 +60,7 @@ namespace BackEnd.Controllers
         {
             var mascotas = await _context.Mascota
                 .Where(m => m.ClienteId == id)
+                .OrderByDescending(m => m.MascotaId)
                 .ToListAsync();
 
             if (mascotas == null || mascotas.Count == 0)
