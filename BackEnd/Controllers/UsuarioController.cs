@@ -57,6 +57,26 @@ namespace BackEnd.Controllers
             return usuario;
         }
 
+        [HttpGet("buscar")]
+        public ActionResult<IEnumerable<Usuario>> BuscarUsuario([FromQuery] string searchTerm)
+        {
+            // Obtener todos los usuarios desde la base de datos
+            List<Usuario> usuarios = _context.Usuarios
+                .OrderByDescending(u => u.UsuarioId)
+                .ToList();
+
+            if (!string.IsNullOrWhiteSpace(searchTerm))
+            {
+                usuarios = usuarios.Where(u =>
+                    u.Dni.Contains(searchTerm, StringComparison.OrdinalIgnoreCase) ||
+                    u.UserName.Contains(searchTerm, StringComparison.OrdinalIgnoreCase))
+                    .ToList();
+            }
+
+            return usuarios;
+        }
+
+
 
         // POST: api/Usuarios
         [HttpPost]

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Text.Json.Serialization;
 
 namespace BackEnd.Models
 {
@@ -10,6 +11,7 @@ namespace BackEnd.Models
         public string? Especialidad { get; set; }
         public decimal Sueldo { get; set; }
 
+        [JsonIgnore]
         public virtual Empleado? Empleado { get; set; }
     }
 }

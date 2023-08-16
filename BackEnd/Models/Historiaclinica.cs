@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Text.Json.Serialization;
 
 namespace BackEnd.Models
 {
@@ -13,7 +14,10 @@ namespace BackEnd.Models
         public string Diagnostico { get; set; } = null!;
         public string Tratamiento { get; set; } = null!;
 
+        [JsonIgnore]
         public virtual Empleado Empleado { get; set; } = null!;
+
+        [JsonIgnore]
         public virtual Mascotum Mascota { get; set; } = null!;
     }
 }

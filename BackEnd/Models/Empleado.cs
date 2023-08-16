@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Text.Json.Serialization;
 
 namespace BackEnd.Models
 {
@@ -18,7 +19,10 @@ namespace BackEnd.Models
         public string Email { get; set; } = null!;
         public int? CargoId { get; set; }
 
+        [JsonIgnore]
         public virtual Cargo? Cargo { get; set; }
+
+        [JsonIgnore]
         public virtual ICollection<Historiaclinica> Historiaclinicas { get; set; }
     }
 }
