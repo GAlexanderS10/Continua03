@@ -75,28 +75,42 @@ namespace BackEnd.Controllers
         }
 
         // PUT: api/UsuarioRol
-        [HttpPut]
-        public IActionResult PutUsuarioRol(UsuarioRolModel model)
+        [HttpPut("ActualizarRol")]
+        public IActionResult ActualizarRol(int usuarioId, int rolId, int nuevoRolId)
         {
             var usuario = _context.Usuarios
                 .Include(u => u.Rols)
-                .FirstOrDefault(u => u.UsuarioId == model.UsuarioId);
+                .FirstOrDefault(u => u.UsuarioId == usuarioId);
 
-            var rol = _context.Rols.Find(model.RolId);
+            var rolActual = _context.Rols.Find(rolId);
+            var nuevoRol = _context.Rols.Find(nuevoRolId);
 
-            if (usuario == null || rol == null)
+            if (usuario == null || rolActual == null || nuevoRol == null)
             {
-                return NotFound("El usuario o el rol especificado no existe.");
+                return NotFound("El usuario o los roles especificados no existen.");
             }
 
-            // Eliminar el rol anterior (si existe) y agregar el nuevo rol
-            usuario.Rols.Clear();
-            usuario.Rols.Add(rol);
+            // Verifica si el usuario tiene el rol actual antes de actualizarlo
+            if (usuario.Rols.Any(r => r.RolId == rolId))
+            {
+                // Elimina el rol actual
+                usuario.Rols.Remove(rolActual);
 
-            _context.SaveChanges();
+                // Agrega el nuevo rol
+                usuario.Rols.Add(nuevoRol);
 
-            return Ok("Rol del usuario actualizado exitosamente.");
+                _context.SaveChanges();
+
+                return Ok("Rol del usuario actualizado exitosamente.");
+            }
+            else
+            {
+                return BadRequest("El usuario no tiene el rol actual especificado.");
+            }
         }
+
+
+
 
 
         // DELETE: api/UsuarioRol

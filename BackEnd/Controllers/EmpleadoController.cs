@@ -1,4 +1,5 @@
-﻿using BackEnd.Mappers;
+﻿using BackEnd.Dtos;
+using BackEnd.Mappers;
 using BackEnd.Models;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -37,6 +38,36 @@ namespace BackEnd.Controllers
 
             return empleado;
         }
+
+        [HttpGet("ListarEmpleadosConCargo")]
+        public async Task<ActionResult<IEnumerable<EmpleadoConCargo>>> ListarEmpleadosConCargo()
+        {
+            try
+            {
+                var empleadosConCargo = await _context.Empleados
+                    .Include(e => e.Cargo)
+                    .Select(e => new EmpleadoConCargo
+                    {
+                        EmpleadoId = e.EmpleadoId,
+                        Nombres = e.Nombres,
+                        Apellidos = e.Apellidos,
+                        Dni = e.Dni,
+                        Celular = e.Celular,
+                        Email = e.Email,
+                        Cargo1 = e.Cargo.Cargo1,
+                        Especialidad = e.Cargo.Especialidad,
+                        Sueldo = e.Cargo.Sueldo
+                    })
+                    .ToListAsync();
+
+                return Ok(empleadosConCargo);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, $"Error al obtener la lista de empleados con cargo: {ex.Message}");
+            }
+        }
+
 
         [HttpGet("buscar-por-dni/{dni}")]
         public async Task<ActionResult<Empleado>> GetEmpleadoByDni(string dni)
