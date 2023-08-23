@@ -39,6 +39,71 @@ namespace BackEnd.Controllers
             return empleado;
         }
 
+        // GET: api/Empleado/Veterinarios
+        [HttpGet("Veterinarios")]
+        public async Task<ActionResult<IEnumerable<Empleado>>> GetVeterinarios()
+        {
+            var veterinarios = await _context.Empleados
+                .Where(e => e.Cargo != null && e.Cargo.Cargo1 == "Veterinario")
+                .ToListAsync();
+
+            return Ok(veterinarios);
+        }
+
+        [HttpGet("Dni/{dni}")]
+        public ActionResult<Empleado> GetVetByDni(string dni)
+        {
+            var empleado = _context.Empleados.FirstOrDefault(c => c.Dni == dni);
+
+            if (empleado == null)
+            {
+                return NotFound();
+            }
+
+            return empleado;
+        }
+
+        // GET: api/Empleado/buscar
+        [HttpGet("buscar")]
+        public async Task<ActionResult<IEnumerable<EmpleadoConCargo>>> BuscarEmpleados([FromQuery] string searchTerm)
+        {
+            try
+            {
+                IQueryable<Empleado> query = _context.Empleados.Include(e => e.Cargo);
+
+                if (!string.IsNullOrEmpty(searchTerm))
+                {
+                    // Si se proporciona un término de búsqueda, filtrar por DNI o nombre de cargo
+                    query = query.Where(e =>
+                        e.Dni.Contains(searchTerm) ||
+                        (e.Cargo != null && e.Cargo.Cargo1.Contains(searchTerm))
+                    );
+                }
+
+                var empleadosConCargo = await query
+                    .Select(e => new EmpleadoConCargo
+                    {
+                        EmpleadoId = e.EmpleadoId,
+                        Nombres = e.Nombres,
+                        Apellidos = e.Apellidos,
+                        Dni = e.Dni,
+                        Celular = e.Celular,
+                        Email = e.Email,
+                        Cargo1 = e.Cargo.Cargo1,
+                        Especialidad = e.Cargo.Especialidad,
+                        Sueldo = e.Cargo.Sueldo
+                    })
+                    .ToListAsync();
+
+                return Ok(empleadosConCargo);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, $"Error al obtener la lista de empleados con cargo: {ex.Message}");
+            }
+        }
+
+
         [HttpGet("ListarEmpleadosConCargo")]
         public async Task<ActionResult<IEnumerable<EmpleadoConCargo>>> ListarEmpleadosConCargo()
         {
@@ -54,6 +119,7 @@ namespace BackEnd.Controllers
                         Dni = e.Dni,
                         Celular = e.Celular,
                         Email = e.Email,
+                        CargoId = e.Cargo.CargoId,  
                         Cargo1 = e.Cargo.Cargo1,
                         Especialidad = e.Cargo.Especialidad,
                         Sueldo = e.Cargo.Sueldo
@@ -183,7 +249,7 @@ namespace BackEnd.Controllers
             return NoContent();
         }
 
-        // DELETE: api/Empleado/5
+        // DELETE
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteEmpleado(int id)
         {
@@ -192,6 +258,9 @@ namespace BackEnd.Controllers
             {
                 return NotFound();
             }
+
+            empleado.CargoId = null;
+
 
             _context.Empleados.Remove(empleado);
             await _context.SaveChangesAsync();

@@ -8,6 +8,7 @@
         public string Dni { get; set; } = null!;
         public string Celular { get; set; } = null!;
         public string Email { get; set; } = null!;
+        public int CargoId { get; set; }
         public string Cargo1 { get; set; } = null!;
         public string? Especialidad { get; set; }
         public decimal Sueldo { get; set; }

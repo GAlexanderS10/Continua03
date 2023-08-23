@@ -30,7 +30,6 @@ namespace BackEnd.Controllers
             }
         }
 
-        // GET: api/Cargo/5
         [HttpGet("{id}")]
         public async Task<ActionResult<Cargo>> GetCargo(int id)
         {
@@ -51,7 +50,7 @@ namespace BackEnd.Controllers
             }
         }
 
-        // POST: api/Cargo
+
         [HttpPost]
         public async Task<IActionResult> PostCargo(Cargo cargo)
         {
@@ -68,7 +67,6 @@ namespace BackEnd.Controllers
             }
         }
 
-        // PUT: api/Cargo/5
         [HttpPut("{id}")]
         public async Task<IActionResult> PutCargo(int id, Cargo cargo)
         {
@@ -101,7 +99,7 @@ namespace BackEnd.Controllers
             }
         }
 
-        // DELETE: api/Cargo/5
+ 
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteCargo(int id)
         {

@@ -76,6 +76,19 @@ namespace BackEnd.Controllers
             return usuarios;
         }
 
+        [HttpGet("Dni/{dni}")]
+        public ActionResult<Usuario> GetClienteByDni(string dni)
+        {
+            var usuario = _context.Usuarios.FirstOrDefault(c => c.Dni == dni);
+
+            if (usuario == null)
+            {
+                return NotFound();
+            }
+
+            return usuario;
+        }
+
 
 
         // POST: api/Usuarios

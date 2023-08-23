@@ -72,6 +72,19 @@ namespace BackEnd.Controllers
         }
 
 
+        [HttpGet("buscar")]
+        public ActionResult<IEnumerable<Mascotum>> BuscarMascotasPorDni([FromQuery] string searchTerm)
+        {
+            // Busca todas las mascotas cuyos clientes tengan un DNI que contenga el searchTerm
+            var mascotas = _context.Mascota
+                .Where(m => m.Cliente.Dni.Contains(searchTerm))
+                .ToList();
+
+            return mascotas;
+        }
+
+
+
 
 
         [HttpPost]

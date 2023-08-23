@@ -1,5 +1,6 @@
 ﻿using BackEnd.Mappers;
 using BackEnd.Models;
+using BackEnd.ViewModels;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -35,6 +36,27 @@ namespace BackEnd.Controllers
             return historiaMappers;
         }
 
+        [HttpGet("listar")]
+        public async Task<ActionResult<IEnumerable<HistoriaViewModel>>> GetHistoriasViewModel()
+        {
+            var historiasViewModel = await _context.Historiaclinicas
+                .Include(h => h.Mascota) 
+                .Include(h => h.Empleado) 
+                .Select(h => new HistoriaViewModel
+                {
+                    HistoriaId = h.HistoriaId,
+                    Nombre = h.Mascota.Nombre, 
+                    Dni = h.Empleado.Dni, 
+                    FechaConsulta = h.FechaConsulta,
+                    Sintomas = h.Sintomas,
+                    Diagnostico = h.Diagnostico,
+                    Tratamiento = h.Tratamiento
+                })
+                .ToListAsync();
+
+            return historiasViewModel;
+        }
+
         // GET: api/Historiaclinica/5
         [HttpGet("{id}")]
         public async Task<ActionResult<HistoriaMapper>> GetHistoriaclinica(int id)
@@ -62,13 +84,13 @@ namespace BackEnd.Controllers
 
         // POST: api/Historiaclinica
         [HttpPost]
-        public async Task<ActionResult<Historiaclinica>> PostHistoriaclinica(HistoriaMapper historiaMapper)
+        public async Task<ActionResult<HistoriaMapper>> PostHistoriaclinica(HistoriaMapper historiaMapper)
         {
             var historiaclinica = new Historiaclinica
             {
                 MascotaId = historiaMapper.MascotaId,
                 EmpleadoId = historiaMapper.EmpleadoId,
-                FechaConsulta = historiaMapper.FechaConsulta,
+                FechaConsulta = DateTime.Now.Date, // Capturar la fecha actual sin la hora.
                 Sintomas = historiaMapper.Sintomas,
                 Diagnostico = historiaMapper.Diagnostico,
                 Tratamiento = historiaMapper.Tratamiento
@@ -76,6 +98,8 @@ namespace BackEnd.Controllers
 
             _context.Historiaclinicas.Add(historiaclinica);
             await _context.SaveChangesAsync();
+
+            historiaMapper.HistoriaId = historiaclinica.HistoriaId; // Actualizar el ID en el ViewModel.
 
             return CreatedAtAction(nameof(GetHistoriaclinica), new { id = historiaclinica.HistoriaId }, historiaMapper);
         }
@@ -98,7 +122,7 @@ namespace BackEnd.Controllers
 
             historiaclinica.MascotaId = historiaMapper.MascotaId;
             historiaclinica.EmpleadoId = historiaMapper.EmpleadoId;
-            historiaclinica.FechaConsulta = historiaMapper.FechaConsulta;
+            historiaclinica.FechaConsulta = DateTime.Now.Date; 
             historiaclinica.Sintomas = historiaMapper.Sintomas;
             historiaclinica.Diagnostico = historiaMapper.Diagnostico;
             historiaclinica.Tratamiento = historiaMapper.Tratamiento;

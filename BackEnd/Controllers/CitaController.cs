@@ -49,6 +49,31 @@ namespace BackEnd.Controllers
             return citas;
         }
 
+        [HttpGet("{clienteId}")]
+        public async Task<ActionResult<IEnumerable<CitaViewModel>>> GetCitas(int clienteId)
+        {
+            var citas = await _context.Cita
+                .Include(c => c.Cliente)
+                .Include(c => c.Mascota)
+                .Where(c => c.ClienteId == clienteId) // Filtrar por el ID del cliente
+                .OrderBy(c => c.FechaCita)
+                .Select(c => new CitaViewModel
+                {
+                    NroCita = c.NroCita,
+                    Dni = c.Cliente.Dni,
+                    Mascota = c.Mascota.Nombre,
+                    Servicio = c.TipoServicio,
+                    FechaRegistro = c.FechaRegistro,
+                    FechaCita = c.FechaCita,
+                    Hora = c.Hora,
+                    Estado = c.Estado
+                })
+                .ToListAsync();
+
+            return citas;
+        }
+
+
 
         [HttpGet("buscar")]
         public ActionResult<IEnumerable<CitaViewModel>> BuscarCitasPorDni([FromQuery] string searchTerm)
@@ -178,9 +203,12 @@ namespace BackEnd.Controllers
                 {
                     return NotFound();
                 }
+
+                // Actualizar los campos de la cita
+                cita.ClienteId = citaDTO.ClienteId;
                 cita.MascotaId = citaDTO.MascotaId;
                 cita.TipoServicio = citaDTO.TipoServicio;
-                cita.FechaRegistro = citaDTO.FechaRegistro;
+                cita.FechaRegistro = DateTime.Now; // Establecer la fecha de registro en la fecha actual
                 cita.FechaCita = citaDTO.FechaCita;
                 cita.Hora = citaDTO.Hora;
                 cita.Estado = citaDTO.Estado;

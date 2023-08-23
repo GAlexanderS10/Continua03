@@ -19,7 +19,7 @@ namespace BackEnd.Controllers
         [HttpGet]
         public ActionResult<IEnumerable<Cliente>> GetClientes()
         {
-            // Ordenar los clientes por ClienteId en orden descendente
+    
             var clientes = _context.Clientes.OrderByDescending(c => c.ClienteId).ToList();
             return clientes;
         }
@@ -40,12 +40,11 @@ namespace BackEnd.Controllers
         [HttpGet("buscar")]
         public ActionResult<IEnumerable<Cliente>> BuscarClientePorDni([FromQuery] string searchTerm)
         {
-            // Obtener todos los clientes desde la base de datos
+        
             List<Cliente> clientes = _context.Clientes
                 .OrderByDescending(c => c.ClienteId)
                 .ToList();
 
-            // Realizar la búsqueda en la lista de clientes en memoria
             clientes = clientes.Where(c => c.Dni.Contains(searchTerm, StringComparison.OrdinalIgnoreCase)).ToList();
 
             return clientes;
